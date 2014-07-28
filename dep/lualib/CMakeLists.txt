@@ -4,9 +4,9 @@
 # Please see the included DOCS/LICENSE.md for more information
 #
 
-file(GLOB sources src/*.c)
+file(GLOB sources src/*.h)
 
-set(lua_STAT_SRCS
+set(lua51_STAT_SRCS
   ${sources}
 )
 
@@ -14,4 +14,5 @@ include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-add_library(lua51 SHARED ${lua_STAT_SRCS})
+add_library(lua51 STATIC ${lua51_STAT_SRCS})
+set_target_properties(lua51 PROPERTIES LINKER_LANGUAGE C)
