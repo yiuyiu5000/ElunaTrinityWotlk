@@ -4,16 +4,14 @@
 # Please see the included DOCS/LICENSE.md for more information
 #
 
-file(GLOB sources *.c)
-list(REMOVE_ITEM sources ${CMAKE_CURRENT_SOURCE_DIR}/lua.c)
-list(REMOVE_ITEM sources ${CMAKE_CURRENT_SOURCE_DIR}/luac.c)
+file(GLOB sources src/*.c)
 
 set(lua_STAT_SRCS
   ${sources}
 )
 
 include_directories(
-  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-add_library(lualib STATIC ${lua_STAT_SRCS})
+add_library(lua51 SHARED ${lua_STAT_SRCS})
