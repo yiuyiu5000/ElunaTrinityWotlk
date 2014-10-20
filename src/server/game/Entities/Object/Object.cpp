@@ -52,7 +52,6 @@
 #include "Battleground.h"
 #include "Chat.h"
 #ifdef ELUNA
-#include "LuaEngine.h"
 #include "ElunaEventMgr.h"
 #endif
 
@@ -73,7 +72,6 @@ Object::Object() : m_PackGUID(sizeof(uint64)+1)
 WorldObject::~WorldObject()
 {
 #ifdef ELUNA
-    Eluna::RemoveRef(this);
     delete elunaEvents;
 #endif
 
@@ -92,10 +90,6 @@ WorldObject::~WorldObject()
 
 Object::~Object()
 {
-#ifdef ELUNA
-    Eluna::RemoveRef(this);
-#endif
-
     if (IsInWorld())
     {
         TC_LOG_FATAL("misc", "Object::~Object %s deleted but still in world!!", GetGUID().ToString().c_str());

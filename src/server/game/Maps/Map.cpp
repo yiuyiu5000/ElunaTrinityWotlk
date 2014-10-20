@@ -57,7 +57,8 @@ Map::~Map()
     sScriptMgr->OnDestroyMap(this);
 
 #ifdef ELUNA
-    Eluna::RemoveRef(this);
+    delete eluna;
+    eluna = NULL;
 #endif
 
     UnloadAll();
@@ -230,6 +231,9 @@ void Map::DeleteStateMachine()
 }
 
 Map::Map(uint32 id, time_t expiry, uint32 InstanceId, uint8 SpawnMode, Map* _parent):
+#ifdef ELUNA
+eluna(new Eluna()),
+#endif
 _creatureToMoveLock(false), _gameObjectsToMoveLock(false), _dynamicObjectsToMoveLock(false),
 i_mapEntry(sMapStore.LookupEntry(id)), i_spawnMode(SpawnMode), i_InstanceId(InstanceId),
 m_unloadTimer(0), m_VisibleDistance(DEFAULT_VISIBILITY_DISTANCE),

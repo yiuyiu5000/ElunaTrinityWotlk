@@ -35,6 +35,9 @@
 #include <bitset>
 #include <list>
 
+#ifdef ELUNA
+class Eluna;
+#endif
 class Unit;
 class WorldPacket;
 class InstanceScript;
@@ -515,6 +518,8 @@ class Map : public GridRefManager<NGridType>
         void SetZoneOverrideLight(uint32 zoneId, uint32 lightId, uint32 fadeInTime);
 
         void UpdateAreaDependentAuras();
+
+        Eluna* eluna;
 
     private:
         void LoadMapAndVMap(int gx, int gy);
