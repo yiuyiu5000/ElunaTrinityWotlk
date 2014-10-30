@@ -56,11 +56,6 @@ Map::~Map()
 {
     sScriptMgr->OnDestroyMap(this);
 
-#ifdef ELUNA
-    delete eluna;
-    eluna = NULL;
-#endif
-
     UnloadAll();
 
     while (!i_worldObjects.empty())
@@ -76,6 +71,11 @@ Map::~Map()
         sScriptMgr->DecreaseScheduledScriptCount(m_scriptSchedule.size());
 
     MMAP::MMapFactory::createOrGetMMapManager()->unloadMapInstance(GetId(), i_InstanceId);
+
+#ifdef ELUNA
+    delete eluna;
+    eluna = NULL;
+#endif
 }
 
 bool Map::ExistMap(uint32 mapid, int gx, int gy)
@@ -2593,9 +2593,9 @@ void Map::AddObjectToRemoveList(WorldObject* obj)
 
 #ifdef ELUNA
     if (Creature* creature = obj->ToCreature())
-        sEluna->OnRemove(creature);
+        eluna->OnRemove(creature);
     else if (GameObject* gameobject = obj->ToGameObject())
-        sEluna->OnRemove(gameobject);
+        eluna->OnRemove(gameobject);
 #endif
 
     obj->CleanupsBeforeDelete(false);                            // remove or simplify at least cross referenced links

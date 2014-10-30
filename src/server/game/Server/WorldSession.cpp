@@ -232,8 +232,9 @@ void WorldSession::SendPacket(WorldPacket* packet)
 
     sScriptMgr->OnPacketSend(this, *packet);
 #ifdef ELUNA
-    if (!sEluna->OnPacketSend(this, *packet))
-        return;
+    if (GetPlayer() && GetPlayer()->FindMap())
+        if (!GetPlayer()->GetMap()->eluna->OnPacketSend(this, *packet))
+            return;
 #endif
 
     m_Socket->SendPacket(*packet);
@@ -331,7 +332,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                         {
                             sScriptMgr->OnPacketReceive(this, *packet);
 #ifdef ELUNA
-                            if (!sEluna->OnPacketReceive(this, *packet))
+                            if (!Eluna::GEluna->OnPacketReceive(this, *packet))
                                 break;
 #endif
                             (this->*opHandle.handler)(*packet);
@@ -348,7 +349,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                             // not expected _player or must checked in packet handler
                             sScriptMgr->OnPacketReceive(this, *packet);
 #ifdef ELUNA
-                            if (!sEluna->OnPacketReceive(this, *packet))
+                            if (!Eluna::GEluna->OnPacketReceive(this, *packet))
                                 break;
 #endif
                             (this->*opHandle.handler)(*packet);
@@ -364,7 +365,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                         {
                             sScriptMgr->OnPacketReceive(this, *packet);
 #ifdef ELUNA
-                            if (!sEluna->OnPacketReceive(this, *packet))
+                            if (!Eluna::GEluna->OnPacketReceive(this, *packet))
                                 break;
 #endif
                             (this->*opHandle.handler)(*packet);
@@ -386,7 +387,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 
                         sScriptMgr->OnPacketReceive(this, *packet);
 #ifdef ELUNA
-                        if (!sEluna->OnPacketReceive(this, *packet))
+                        if (!Eluna::GEluna->OnPacketReceive(this, *packet))
                             break;
 #endif
                         (this->*opHandle.handler)(*packet);

@@ -52,6 +52,7 @@
 #include "Battleground.h"
 #include "Chat.h"
 #ifdef ELUNA
+#include "LuaEngine.h"
 #include "ElunaEventMgr.h"
 #endif
 
@@ -73,6 +74,7 @@ WorldObject::~WorldObject()
 {
 #ifdef ELUNA
     delete elunaEvents;
+    elunaEvents = NULL;
 #endif
 
     // this may happen because there are many !create/delete
@@ -1109,7 +1111,7 @@ void MovementInfo::OutDebug()
 
 WorldObject::WorldObject(bool isWorldObject) : WorldLocation(), LastUsedScriptID(0),
 #ifdef ELUNA
-elunaEvents(new ElunaEventProcessor(this)),
+elunaEvents(NULL),
 #endif
 m_name(""), m_isActive(false), m_isWorldObject(isWorldObject), m_zoneScript(NULL),
 m_transport(NULL), m_currMap(NULL), m_InstanceId(0),
@@ -1953,6 +1955,12 @@ void WorldObject::SetMap(Map* map)
     m_currMap = map;
     m_mapId = map->GetId();
     m_InstanceId = map->GetInstanceId();
+
+#ifdef ELUNA
+    delete elunaEvents;
+    elunaEvents = new ElunaEventProcessor(map->eluna->eventMgr, this);
+#endif
+
     if (IsWorldObject())
         m_currMap->AddWorldObject(this);
 }
@@ -1963,6 +1971,12 @@ void WorldObject::ResetMap()
     ASSERT(!IsInWorld());
     if (IsWorldObject())
         m_currMap->RemoveWorldObject(this);
+
+#ifdef ELUNA
+    delete elunaEvents;
+    elunaEvents = NULL;
+#endif
+
     m_currMap = NULL;
     //maybe not for corpse
     //m_mapId = 0;

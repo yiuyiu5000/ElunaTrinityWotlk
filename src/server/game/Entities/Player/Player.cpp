@@ -5160,7 +5160,7 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
     UpdateObjectVisibility();
 
 #ifdef ELUNA
-    sEluna->OnResurrect(this);
+    GetMap()->eluna->OnResurrect(this);
 #endif
 
     if (!applySickness)
@@ -12470,7 +12470,7 @@ Item* Player::EquipItem(uint16 pos, Item* pItem, bool update)
         ApplyEquipCooldown(pItem2);
 
 #ifdef ELUNA
-        sEluna->OnEquip(this, pItem2, bag, slot);
+        GetMap()->eluna->OnEquip(this, pItem2, bag, slot);
 #endif
         return pItem2;
     }
@@ -12480,7 +12480,7 @@ Item* Player::EquipItem(uint16 pos, Item* pItem, bool update)
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EQUIP_EPIC_ITEM, pItem->GetEntry(), slot);
 
 #ifdef ELUNA
-        sEluna->OnEquip(this, pItem, bag, slot);
+        GetMap()->eluna->OnEquip(this, pItem, bag, slot);
 #endif
     return pItem;
 }
@@ -12504,7 +12504,7 @@ void Player::QuickEquipItem(uint16 pos, Item* pItem)
         UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EQUIP_ITEM, pItem->GetEntry());
         UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EQUIP_EPIC_ITEM, pItem->GetEntry(), slot);
 #ifdef ELUNA
-        sEluna->OnEquip(this, pItem, (pos >> 8), slot);
+        GetMap()->eluna->OnEquip(this, pItem, (pos >> 8), slot);
 #endif
     }
 }
@@ -25022,7 +25022,7 @@ void Player::StoreLootItem(uint8 lootSlot, Loot* loot)
             loot->DeleteLootItemFromContainerItemDB(item->itemid);
 
 #ifdef ELUNA
-        sEluna->OnLootItem(this, newitem, item->count, this->GetLootGUID());
+        GetMap()->eluna->OnLootItem(this, newitem, item->count, this->GetLootGUID());
 #endif
     }
     else

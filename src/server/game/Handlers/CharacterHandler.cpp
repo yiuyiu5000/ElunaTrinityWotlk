@@ -970,7 +970,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
     }
 #ifdef ELUNA
     if (pCurrChar->HasAtLoginFlag(AT_LOGIN_FIRST))
-        sEluna->OnFirstLogin(pCurrChar);
+        Eluna::GEluna->OnFirstLogin(pCurrChar);
 #endif
 
     bool firstLogin = pCurrChar->HasAtLoginFlag(AT_LOGIN_FIRST);

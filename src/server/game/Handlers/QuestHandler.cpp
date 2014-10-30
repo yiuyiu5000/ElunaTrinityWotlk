@@ -423,7 +423,7 @@ void WorldSession::HandleQuestLogRemoveQuest(WorldPacket& recvData)
             _player->RemoveTimedAchievement(ACHIEVEMENT_TIMED_TYPE_QUEST, questId);
 
 #ifdef ELUNA
-            sEluna->OnQuestAbandon(_player, questId);
+            Eluna::GEluna->OnQuestAbandon(_player, questId);
 #endif
             TC_LOG_INFO("network", "Player %u abandoned quest %u", _player->GetGUIDLow(), questId);
 

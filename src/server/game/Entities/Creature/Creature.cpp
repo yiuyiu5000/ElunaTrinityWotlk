@@ -186,7 +186,7 @@ void Creature::AddToWorld()
     if (!IsInWorld())
     {
 #ifdef ELUNA
-        sEluna->OnAddToWorld(this);
+        GetMap()->eluna->OnAddToWorld(this);
 #endif
         if (GetZoneScript())
             GetZoneScript()->OnCreatureCreate(this);
@@ -204,7 +204,7 @@ void Creature::RemoveFromWorld()
     if (IsInWorld())
     {
 #ifdef ELUNA
-        sEluna->OnRemoveFromWorld(this);
+        GetMap()->eluna->OnRemoveFromWorld(this);
 #endif
         if (GetZoneScript())
             GetZoneScript()->OnCreatureRemove(this);

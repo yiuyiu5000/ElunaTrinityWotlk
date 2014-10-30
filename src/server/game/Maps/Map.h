@@ -519,7 +519,9 @@ class Map : public GridRefManager<NGridType>
 
         void UpdateAreaDependentAuras();
 
+#ifdef ELUNA
         Eluna* eluna;
+#endif
 
     private:
         void LoadMapAndVMap(int gx, int gy);
