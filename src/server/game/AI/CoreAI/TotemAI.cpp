@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -19,10 +19,8 @@
 #include "TotemAI.h"
 #include "Totem.h"
 #include "Creature.h"
-#include "DBCStores.h"
 #include "ObjectAccessor.h"
 #include "SpellMgr.h"
-
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
@@ -42,7 +40,7 @@ TotemAI::TotemAI(Creature* c) : CreatureAI(c), i_victimGuid()
 
 void TotemAI::MoveInLineOfSight(Unit* /*who*/) { }
 
-void TotemAI::EnterEvadeMode()
+void TotemAI::EnterEvadeMode(EvadeReason /*why*/)
 {
     me->CombatStop(true);
 }

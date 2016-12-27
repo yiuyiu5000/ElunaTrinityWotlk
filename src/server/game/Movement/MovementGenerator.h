@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -27,7 +27,7 @@
 
 class Unit;
 
-class MovementGenerator
+class TC_GAME_API MovementGenerator
 {
     public:
         virtual ~MovementGenerator();
@@ -39,7 +39,7 @@ class MovementGenerator
 
         virtual bool Update(Unit*, uint32 time_diff) = 0;
 
-        virtual MovementGeneratorType GetMovementGeneratorType() = 0;
+        virtual MovementGeneratorType GetMovementGeneratorType() const = 0;
 
         virtual void unitSpeedChanged() { }
 

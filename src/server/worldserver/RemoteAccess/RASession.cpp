@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+* Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
 * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
 *
 * This program is free software; you can redistribute it and/or modify it
@@ -121,7 +121,7 @@ bool RASession::CheckAccessLevel(const std::string& user)
 {
     std::string safeUser = user;
 
-    AccountMgr::normalizeString(safeUser);
+    Utf8ToUpperOnlyLatin(safeUser);
 
     PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_ACCESS);
     stmt->setString(0, safeUser);
@@ -135,7 +135,7 @@ bool RASession::CheckAccessLevel(const std::string& user)
 
     Field* fields = result->Fetch();
 
-    if (fields[1].GetUInt8() < sConfigMgr->GetIntDefault("RA.MinLevel", 3))
+    if (fields[1].GetUInt8() < sConfigMgr->GetIntDefault("Ra.MinLevel", 3))
     {
         TC_LOG_INFO("commands.ra", "User %s has no privilege to login", user.c_str());
         return false;
@@ -153,10 +153,10 @@ bool RASession::CheckPassword(const std::string& user, const std::string& pass)
 {
     std::string safe_user = user;
     std::transform(safe_user.begin(), safe_user.end(), safe_user.begin(), ::toupper);
-    AccountMgr::normalizeString(safe_user);
+    Utf8ToUpperOnlyLatin(safe_user);
 
     std::string safe_pass = pass;
-    AccountMgr::normalizeString(safe_pass);
+    Utf8ToUpperOnlyLatin(safe_pass);
     std::transform(safe_pass.begin(), safe_pass.end(), safe_pass.begin(), ::toupper);
 
     std::string hash = AccountMgr::CalculateShaPassHash(safe_user, safe_pass);

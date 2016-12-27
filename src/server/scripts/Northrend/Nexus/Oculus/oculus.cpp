@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -20,6 +20,7 @@
 #include "ScriptedGossip.h"
 #include "SpellScript.h"
 #include "SpellAuraEffects.h"
+#include "SpellInfo.h"
 #include "CombatAI.h"
 #include "Player.h"
 #include "Vehicle.h"
@@ -76,6 +77,11 @@ enum Drakes
     SPELL_EMERALD_TOUCH_THE_NIGHTMARE   = 50341,         // (60 yds) - Instant - Consumes 30% of the caster's max health to inflict 25, 000 nature damage to an enemy dragon and reduce the damage it deals by 25% for 30 sec.
     // you do not have access to until you kill the Mage-Lord Urom
     SPELL_EMERALD_DREAM_FUNNEL          = 50344,         // (60 yds) - Channeled - Transfers 5% of the caster's max health to a friendly drake every second for 10 seconds as long as the caster channels.
+/*
+ * All Drakes
+ * GPS System
+ */
+    SPELL_GPS                           = 53389,
 
     // Misc
     POINT_LAND                          = 2,
@@ -101,7 +107,13 @@ enum Says
     WHISPER_DRAKES_WELCOME            = 1,
     WHISPER_DRAKES_ABILITIES          = 2,
     WHISPER_DRAKES_SPECIAL            = 3,
-    WHISPER_DRAKES_LOWHEALTH          = 4
+    WHISPER_DRAKES_LOWHEALTH          = 4,
+    WHISPER_GPS_10_CONSTRUCTS         = 5,
+    WHISPER_GPS_1_CONSTRUCT           = 6,
+    WHISPER_GPS_VAROS                 = 7,
+    WHISPER_GPS_UROM                  = 8,
+    WHISPER_GPS_EREGOS                = 9,
+    WHISPER_GPS_END                   = 10
 };
 
 class npc_verdisa_beglaristrasz_eternos : public CreatureScript
@@ -250,6 +262,26 @@ class npc_ruby_emerald_amber_drake : public CreatureScript
                 Initialize();
             }
 
+            void SpellHit(Unit* /*caster*/, const SpellInfo* spell) override
+            {
+                if (Unit* creator = ObjectAccessor::GetUnit(*me, me->GetCreatorGUID()))
+                    if (spell->Id == SPELL_GPS)
+                    {
+                        if (_instance->GetBossState(DATA_EREGOS) == DONE)
+                            Talk(WHISPER_GPS_END, creator);
+                        else if (_instance->GetBossState(DATA_UROM) == DONE)
+                            Talk(WHISPER_GPS_EREGOS, creator);
+                        else if (_instance->GetBossState(DATA_VAROS) == DONE)
+                            Talk(WHISPER_GPS_UROM, creator);
+                        else if (_instance->GetData(DATA_CONSTRUCTS) == KILL_NO_CONSTRUCT)
+                            Talk(WHISPER_GPS_VAROS, creator);
+                        else if (_instance->GetData(DATA_CONSTRUCTS) == KILL_ONE_CONSTRUCT)
+                            Talk(WHISPER_GPS_1_CONSTRUCT, creator);
+                        else if (_instance->GetData(DATA_CONSTRUCTS) == KILL_MORE_CONSTRUCT)
+                            Talk(WHISPER_GPS_10_CONSTRUCTS, creator);
+                    }
+            }
+
             void IsSummonedBy(Unit* summoner) override
             {
                 if (_instance->GetBossState(DATA_EREGOS) == IN_PROGRESS)
@@ -343,7 +375,7 @@ class npc_ruby_emerald_amber_drake : public CreatureScript
                         {
                             me->DespawnOrUnsummon(2050);
                             me->SetOrientation(2.5f);
-                            me->SetSpeed(MOVE_FLIGHT, 1.0f, true);
+                            me->SetSpeedRate(MOVE_FLIGHT, 1.0f);
                             Talk(SAY_DRAKES_TAKEOFF);
                             Position pos = me->GetPosition();
                             Position offset = { 10.0f, 10.0f, 12.0f, 0.0f };
@@ -572,8 +604,11 @@ class spell_oculus_temporal_rift : public SpellScriptLoader
             void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
             {
                 PreventDefaultAction();
-                int32 amount = aurEff->GetAmount() + eventInfo.GetDamageInfo()->GetDamage();
+                DamageInfo* damageInfo = eventInfo.GetDamageInfo();
+                if (!damageInfo || !damageInfo->GetDamage())
+                    return;
 
+                int32 amount = aurEff->GetAmount() + damageInfo->GetDamage();
                 if (amount >= 15000)
                 {
                     if (Unit* caster = GetCaster())

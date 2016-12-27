@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -33,6 +33,8 @@ enum WaypointMoveType
 
 struct WaypointData
 {
+    WaypointData() : id(0), x(0.0f), y(0.0f), z(0.0f), orientation(0.0f), delay(0), event_id(0), move_type(WAYPOINT_MOVE_TYPE_RUN), event_chance(0) { }
+
     uint32 id;
     float x, y, z, orientation;
     uint32 delay;
@@ -41,17 +43,13 @@ struct WaypointData
     uint8 event_chance;
 };
 
-typedef std::vector<WaypointData*> WaypointPath;
+typedef std::vector<WaypointData> WaypointPath;
 typedef std::unordered_map<uint32, WaypointPath> WaypointPathContainer;
 
-class WaypointMgr
+class TC_GAME_API WaypointMgr
 {
     public:
-        static WaypointMgr* instance()
-        {
-            static WaypointMgr instance;
-            return &instance;
-        }
+        static WaypointMgr* instance();
 
         // Attempts to reload a single path from database
         void ReloadPath(uint32 id);
@@ -66,12 +64,12 @@ class WaypointMgr
             if (itr != _waypointStore.end())
                 return &itr->second;
 
-            return NULL;
+            return nullptr;
         }
 
     private:
         WaypointMgr();
-        ~WaypointMgr();
+        ~WaypointMgr() { }
 
         WaypointPathContainer _waypointStore;
 };

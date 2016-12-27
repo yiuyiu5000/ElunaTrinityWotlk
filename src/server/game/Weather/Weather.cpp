@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -25,12 +25,8 @@
 #include "Player.h"
 #include "World.h"
 #include "Log.h"
-#include "ObjectMgr.h"
 #include "Util.h"
 #include "ScriptMgr.h"
-#ifdef ELUNA
-#include "LuaEngine.h"
-#endif
 #include "WorldSession.h"
 
 /// Create the Weather object
@@ -43,13 +39,6 @@ Weather::Weather(uint32 zone, WeatherData const* weatherChances)
 
     TC_LOG_INFO("misc", "WORLD: Starting weather system for zone %u (change every %u minutes).", m_zone, (uint32)(m_timer.GetInterval() / (MINUTE*IN_MILLISECONDS)));
 }
-
-Weather::~Weather()
-{
-#ifdef ELUNA
-    Eluna::RemoveRef(this);
-#endif
-};
 
 /// Launch a weather update
 bool Weather::Update(uint32 diff)
@@ -163,7 +152,7 @@ bool Weather::ReGenerate()
     uint32 chance2 = chance1+ m_weatherChances->data[season].snowChance;
     uint32 chance3 = chance2+ m_weatherChances->data[season].stormChance;
 
-    uint32 rnd = urand(0, 99);
+    uint32 rnd = urand(1, 100);
     if (rnd <= chance1)
         m_type = WEATHER_TYPE_RAIN;
     else if (rnd <= chance2)
@@ -203,8 +192,10 @@ bool Weather::ReGenerate()
 
 void Weather::SendWeatherUpdateToPlayer(Player* player)
 {
-    WorldPacket data(SMSG_WEATHER, (4+4+4));
-    data << uint32(GetWeatherState()) << (float)m_grade << uint8(0);
+    WorldPacket data(SMSG_WEATHER, (4 + 4 + 1));
+    data << uint32(GetWeatherState());
+    data << (float)m_grade;
+    data << uint8(0);
     player->GetSession()->SendPacket(&data);
 }
 
@@ -219,7 +210,7 @@ bool Weather::UpdateWeather()
 
     WeatherState state = GetWeatherState();
 
-    WorldPacket data(SMSG_WEATHER, (4+4+4));
+    WorldPacket data(SMSG_WEATHER, (4 + 4 + 1));
     data << uint32(state);
     data << (float)m_grade;
     data << uint8(0);

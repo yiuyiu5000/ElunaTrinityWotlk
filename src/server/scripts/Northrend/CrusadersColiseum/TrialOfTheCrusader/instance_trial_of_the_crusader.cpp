@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,6 +22,14 @@
 #include "Player.h"
 #include "TemporarySummon.h"
 
+BossBoundaryData const boundaries = {
+    { BOSS_BEASTS, new CircleBoundary(Position(563.26f, 139.6f), 75.0) },
+    { BOSS_JARAXXUS, new CircleBoundary(Position(563.26f, 139.6f), 75.0) },
+    { BOSS_CRUSADERS, new CircleBoundary(Position(563.26f, 139.6f), 75.0) },
+    { BOSS_VALKIRIES, new CircleBoundary(Position(563.26f, 139.6f), 75.0) },
+    { BOSS_ANUBARAK, new EllipseBoundary(Position(746.0f, 135.0f), 100.0, 75.0) }
+};
+
 class instance_trial_of_the_crusader : public InstanceMapScript
 {
     public:
@@ -33,6 +41,7 @@ class instance_trial_of_the_crusader : public InstanceMapScript
             {
                 SetHeaders(DataHeader);
                 SetBossNumber(MAX_ENCOUNTERS);
+                LoadBossBoundaries(boundaries);
                 TrialCounter = 50;
                 EventStage = 0;
                 NorthrendBeasts = NOT_STARTED;
@@ -255,12 +264,6 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                                 if (GetBossState(BOSS_VALKIRIES) == SPECIAL)
                                     state = DONE;
                                 break;
-                            case DONE:
-                                if (instance->GetPlayers().getFirst()->GetSource()->GetTeam() == ALLIANCE)
-                                    EventStage = 4020;
-                                else
-                                    EventStage = 4030;
-                                break;
                             default:
                                 break;
                         }
@@ -311,7 +314,7 @@ class instance_trial_of_the_crusader : public InstanceMapScript
 
                                 if (tributeChest)
                                     if (Creature* tirion =  instance->GetCreature(TirionGUID))
-                                        if (GameObject* chest = tirion->SummonGameObject(tributeChest, 805.62f, 134.87f, 142.16f, 3.27f, 0, 0, 0, 0, WEEK))
+                                        if (GameObject* chest = tirion->SummonGameObject(tributeChest, 805.62f, 134.87f, 142.16f, 3.27f, G3D::Quat(), WEEK))
                                             chest->SetRespawnTime(chest->GetRespawnDelay());
                                 break;
                             }
@@ -336,7 +339,7 @@ class instance_trial_of_the_crusader : public InstanceMapScript
 
                 if (type < MAX_ENCOUNTERS)
                 {
-                    TC_LOG_INFO("scripts", "[ToCr] BossState(type %u) %u = state %u;", type, GetBossState(type), state);
+                    TC_LOG_DEBUG("scripts", "[ToCr] BossState(type %u) %u = state %u;", type, GetBossState(type), state);
                     if (state == FAIL)
                     {
                         if (instance->IsHeroic())

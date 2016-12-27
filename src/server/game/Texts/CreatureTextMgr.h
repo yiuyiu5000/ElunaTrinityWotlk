@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -75,23 +75,14 @@ typedef std::unordered_map<uint32, CreatureTextHolder> CreatureTextMap;     // a
 
 typedef std::map<CreatureTextId, CreatureTextLocale> LocaleCreatureTextMap;
 
-//used for handling non-repeatable random texts
-typedef std::vector<uint8> CreatureTextRepeatIds;
-typedef std::unordered_map<uint8, CreatureTextRepeatIds> CreatureTextRepeatGroup;
-typedef std::unordered_map<ObjectGuid, CreatureTextRepeatGroup> CreatureTextRepeatMap;//guid based
-
-class CreatureTextMgr
+class TC_GAME_API CreatureTextMgr
 {
     private:
         CreatureTextMgr() { }
         ~CreatureTextMgr() { }
 
     public:
-        static CreatureTextMgr* instance()
-        {
-            static CreatureTextMgr instance;
-            return &instance;
-        }
+        static CreatureTextMgr* instance();
 
         void LoadCreatureTexts();
         void LoadCreatureTextLocales();
@@ -115,7 +106,6 @@ class CreatureTextMgr
         float GetRangeForChatType(ChatMsg msgType) const;
 
         CreatureTextMap mTextMap;
-        CreatureTextRepeatMap mTextRepeatMap;
         LocaleCreatureTextMap mLocaleTextMap;
 };
 
@@ -151,7 +141,6 @@ class CreatureTextLocalizer
             {
                 messageTemplate = new WorldPacket();
                 whisperGUIDpos = _builder(messageTemplate, loc_idx);
-                ASSERT(messageTemplate->GetOpcode() != MSG_NULL_ACTION);
                 _packetCache[loc_idx] = new std::pair<WorldPacket*, size_t>(messageTemplate, whisperGUIDpos);
             }
             else

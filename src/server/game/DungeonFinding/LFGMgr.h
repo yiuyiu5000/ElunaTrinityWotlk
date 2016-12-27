@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -289,18 +289,14 @@ struct LFGDungeonData
     uint32 Entry() const { return id + (type << 24); }
 };
 
-class LFGMgr
+class TC_GAME_API LFGMgr
 {
     private:
         LFGMgr();
         ~LFGMgr();
 
     public:
-        static LFGMgr* instance()
-        {
-            static LFGMgr instance;
-            return &instance;
-        }
+        static LFGMgr* instance();
 
         // Functions used outside lfg namespace
         void Update(uint32 diff);
@@ -322,6 +318,8 @@ class LFGMgr
         LfgDungeonSet const& GetSelectedDungeons(ObjectGuid guid);
         /// Get current lfg state
         LfgState GetState(ObjectGuid guid);
+        /// Get current vote kick state
+        bool IsVoteKickActive(ObjectGuid gguid);
         /// Get current dungeon
         uint32 GetDungeon(ObjectGuid guid, bool asId = true);
         /// Get the map id of the current dungeon
@@ -397,7 +395,7 @@ class LFGMgr
         /// Join Lfg with selected roles, dungeons and comment
         void JoinLfg(Player* player, uint8 roles, LfgDungeonSet& dungeons, std::string const& comment);
         /// Leaves lfg
-        void LeaveLfg(ObjectGuid guid);
+        void LeaveLfg(ObjectGuid guid, bool disconnected = false);
 
         // LfgQueue
         /// Get last lfg state (NONE, DUNGEON or FINISHED_DUNGEON)
@@ -425,6 +423,7 @@ class LFGMgr
         void SetSelectedDungeons(ObjectGuid guid, LfgDungeonSet const& dungeons);
         void DecreaseKicksLeft(ObjectGuid guid);
         void SetState(ObjectGuid guid, LfgState state);
+        void SetVoteKick(ObjectGuid gguid, bool active);
         void RemovePlayerData(ObjectGuid guid);
         void GetCompatibleDungeons(LfgDungeonSet& dungeons, GuidSet const& players, LfgLockPartyMap& lockMap, bool isContinue);
         void _SaveToDB(ObjectGuid guid, uint32 db_guid);

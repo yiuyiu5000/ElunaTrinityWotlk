@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -27,6 +27,7 @@
 #include "SmartScript.h"
 #include "SmartScriptMgr.h"
 #include "GameObjectAI.h"
+#include "WaypointManager.h"
 
 enum SmartEscortState
 {
@@ -42,20 +43,22 @@ enum SmartEscortVars
     SMART_MAX_AID_DIST    = SMART_ESCORT_MAX_PLAYER_DIST / 2
 };
 
-class SmartAI : public CreatureAI
+class TC_GAME_API SmartAI : public CreatureAI
 {
     public:
-        ~SmartAI(){ }
+        ~SmartAI();
         explicit SmartAI(Creature* c);
 
+        // Check whether we are currently permitted to make the creature take action
+        bool IsAIControlled() const;
+
         // Start moving to the desired MovePoint
-        void StartPath(bool run = false, uint32 path = 0, bool repeat = false, Unit* invoker = NULL);
+        void StartPath(bool run = false, uint32 path = 0, bool repeat = false, Unit* invoker = nullptr);
         bool LoadPath(uint32 entry);
         void PausePath(uint32 delay, bool forced = false);
         void StopPath(uint32 DespawnTime = 0, uint32 quest = 0, bool fail = false);
         void EndPath(bool fail = false);
         void ResumePath();
-        WayPoint* GetNextWayPoint();
         bool HasEscortState(uint32 uiEscortState) const { return (mEscortState & uiEscortState) != 0; }
         void AddEscortState(uint32 uiEscortState) { mEscortState |= uiEscortState; }
         void RemoveEscortState(uint32 uiEscortState) { mEscortState &= ~uiEscortState; }
@@ -75,11 +78,11 @@ class SmartAI : public CreatureAI
         // Called at reaching home after evade, InitializeAI(), EnterEvadeMode() for resetting variables
         void JustReachedHome() override;
 
-        // Called for reaction at enter to combat if not in combat yet (enemy can be NULL)
+        // Called for reaction at enter to combat if not in combat yet (enemy can be nullptr)
         void EnterCombat(Unit* enemy) override;
 
         // Called for reaction at stopping attack at no attackers or targets
-        void EnterEvadeMode() override;
+        void EnterEvadeMode(EvadeReason why = EVADE_REASON_OTHER) override;
 
         // Called when the creature is killed
         void JustDied(Unit* killer) override;
@@ -129,9 +132,6 @@ class SmartAI : public CreatureAI
         // called when the corpse of this creature gets removed
         void CorpseRemoved(uint32& respawnDelay) override;
 
-        // Called at World update tick if creature is charmed
-        void UpdateAIWhileCharmed(const uint32 diff);
-
         // Called when a Player/Creature enters the creature (vehicle)
         void PassengerBoarded(Unit* who, int8 seatId, bool apply) override;
 
@@ -172,11 +172,13 @@ class SmartAI : public CreatureAI
 
         void SetSwim(bool swim = true);
 
+        void SetEvadeDisabled(bool disable = true);
+
         void SetInvincibilityHpLevel(uint32 level) { mInvincibilityHpLevel = level; }
 
         void sGossipHello(Player* player) override;
-        void sGossipSelect(Player* player, uint32 sender, uint32 action) override;
-        void sGossipSelectCode(Player* player, uint32 sender, uint32 action, const char* code) override;
+        void sGossipSelect(Player* player, uint32 menuId, uint32 gossipListId) override;
+        void sGossipSelectCode(Player* player, uint32 menuId, uint32 gossipListId, const char* code) override;
         void sQuestAccept(Player* player, Quest const* quest) override;
         //void sQuestSelect(Player* player, Quest const* quest) override;
         void sQuestReward(Player* player, Quest const* quest, uint32 opt) override;
@@ -195,6 +197,7 @@ class SmartAI : public CreatureAI
         void OnSpellClick(Unit* clicker, bool& result) override;
 
     private:
+        bool mIsCharmed;
         uint32 mFollowCreditType;
         uint32 mFollowArrivedTimer;
         uint32 mFollowCredit;
@@ -206,23 +209,23 @@ class SmartAI : public CreatureAI
         void ReturnToLastOOCPos();
         void UpdatePath(const uint32 diff);
         SmartScript mScript;
-        WPPath* mWayPoints;
         uint32 mEscortState;
         uint32 mCurrentWPID;
-        uint32 mLastWPIDReached;
         bool mWPReached;
+        bool mOOCReached;
+        bool m_Ended;
         uint32 mWPPauseTimer;
-        WayPoint* mLastWP;
-        Position mLastOOCPos;//set on enter combat
-        uint32 GetWPCount() { return mWayPoints ? mWayPoints->size() : 0; }
+        uint32 mEscortNPCFlags;
         bool mCanRepeatPath;
         bool mRun;
+        bool mEvadeDisabled;
         bool mCanAutoAttack;
         bool mCanCombatMove;
         bool mForcedPaused;
         uint32 mInvincibilityHpLevel;
-        bool AssistPlayerInCombat(Unit* who);
+        bool AssistPlayerInCombatAgainst(Unit* who);
 
+        WaypointPath _path;
         uint32 mDespawnTime;
         uint32 mDespawnState;
         void UpdateDespawn(const uint32 diff);
@@ -230,7 +233,7 @@ class SmartAI : public CreatureAI
         bool mJustReset;
 };
 
-class SmartGameObjectAI : public GameObjectAI
+class TC_GAME_API SmartGameObjectAI : public GameObjectAI
 {
     public:
         SmartGameObjectAI(GameObject* g) : GameObjectAI(g) { }
@@ -257,4 +260,8 @@ class SmartGameObjectAI : public GameObjectAI
     private:
         SmartScript mScript;
 };
+
+/// Registers scripts required by the SAI scripting system
+void AddSC_SmartScripts();
+
 #endif

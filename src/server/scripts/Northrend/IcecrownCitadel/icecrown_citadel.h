@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -72,50 +72,51 @@ enum TeleporterSpells
 enum DataTypes
 {
     // Encounter States/Boss GUIDs
-    DATA_LORD_MARROWGAR             = 0,
-    DATA_LADY_DEATHWHISPER          = 1,
-    DATA_ICECROWN_GUNSHIP_BATTLE    = 2,
-    DATA_DEATHBRINGER_SAURFANG      = 3,
-    DATA_FESTERGUT                  = 4,
-    DATA_ROTFACE                    = 5,
-    DATA_PROFESSOR_PUTRICIDE        = 6,
-    DATA_BLOOD_PRINCE_COUNCIL       = 7,
-    DATA_BLOOD_QUEEN_LANA_THEL      = 8,
-    DATA_SISTER_SVALNA              = 9,
-    DATA_VALITHRIA_DREAMWALKER      = 10,
-    DATA_SINDRAGOSA                 = 11,
-    DATA_THE_LICH_KING              = 12,
+    DATA_LORD_MARROWGAR                = 0,
+    DATA_LADY_DEATHWHISPER             = 1,
+    DATA_ICECROWN_GUNSHIP_BATTLE       = 2,
+    DATA_DEATHBRINGER_SAURFANG         = 3,
+    DATA_FESTERGUT                     = 4,
+    DATA_ROTFACE                       = 5,
+    DATA_PROFESSOR_PUTRICIDE           = 6,
+    DATA_BLOOD_PRINCE_COUNCIL          = 7,
+    DATA_BLOOD_QUEEN_LANA_THEL         = 8,
+    DATA_SISTER_SVALNA                 = 9,
+    DATA_VALITHRIA_DREAMWALKER         = 10,
+    DATA_SINDRAGOSA                    = 11,
+    DATA_THE_LICH_KING                 = 12,
 
     // Additional data
-    DATA_SAURFANG_EVENT_NPC         = 13,
-    DATA_BONED_ACHIEVEMENT          = 14,
-    DATA_OOZE_DANCE_ACHIEVEMENT     = 15,
-    DATA_PUTRICIDE_TABLE            = 16,
-    DATA_NAUSEA_ACHIEVEMENT         = 17,
-    DATA_ORB_WHISPERER_ACHIEVEMENT  = 18,
-    DATA_PRINCE_KELESETH_GUID       = 19,
-    DATA_PRINCE_TALDARAM_GUID       = 20,
-    DATA_PRINCE_VALANAR_GUID        = 21,
-    DATA_BLOOD_PRINCES_CONTROL      = 22,
-    DATA_SINDRAGOSA_FROSTWYRMS      = 23,
-    DATA_SPINESTALKER               = 24,
-    DATA_RIMEFANG                   = 25,
-    DATA_COLDFLAME_JETS             = 26,
-    DATA_TEAM_IN_INSTANCE           = 27,
-    DATA_BLOOD_QUICKENING_STATE     = 28,
-    DATA_HEROIC_ATTEMPTS            = 29,
-    DATA_CROK_SCOURGEBANE           = 30,
-    DATA_CAPTAIN_ARNATH             = 31,
-    DATA_CAPTAIN_BRANDON            = 32,
-    DATA_CAPTAIN_GRONDEL            = 33,
-    DATA_CAPTAIN_RUPERT             = 34,
-    DATA_VALITHRIA_TRIGGER          = 35,
-    DATA_VALITHRIA_LICH_KING        = 36,
-    DATA_HIGHLORD_TIRION_FORDRING   = 37,
-    DATA_ARTHAS_PLATFORM            = 38,
-    DATA_TERENAS_MENETHIL           = 39,
-    DATA_ENEMY_GUNSHIP              = 40,
-    DATA_UPPERSPIRE_TELE_ACT        = 41,
+    DATA_SAURFANG_EVENT_NPC            = 13,
+    DATA_BONED_ACHIEVEMENT             = 14,
+    DATA_OOZE_DANCE_ACHIEVEMENT        = 15,
+    DATA_PUTRICIDE_TABLE               = 16,
+    DATA_NAUSEA_ACHIEVEMENT            = 17,
+    DATA_ORB_WHISPERER_ACHIEVEMENT     = 18,
+    DATA_PRINCE_KELESETH_GUID          = 19,
+    DATA_PRINCE_TALDARAM_GUID          = 20,
+    DATA_PRINCE_VALANAR_GUID           = 21,
+    DATA_BLOOD_PRINCES_CONTROL         = 22,
+    DATA_SINDRAGOSA_FROSTWYRMS         = 23,
+    DATA_SPINESTALKER                  = 24,
+    DATA_RIMEFANG                      = 25,
+    DATA_COLDFLAME_JETS                = 26,
+    DATA_TEAM_IN_INSTANCE              = 27,
+    DATA_BLOOD_QUICKENING_STATE        = 28,
+    DATA_HEROIC_ATTEMPTS               = 29,
+    DATA_CROK_SCOURGEBANE              = 30,
+    DATA_CAPTAIN_ARNATH                = 31,
+    DATA_CAPTAIN_BRANDON               = 32,
+    DATA_CAPTAIN_GRONDEL               = 33,
+    DATA_CAPTAIN_RUPERT                = 34,
+    DATA_VALITHRIA_TRIGGER             = 35,
+    DATA_VALITHRIA_LICH_KING           = 36,
+    DATA_HIGHLORD_TIRION_FORDRING      = 37,
+    DATA_ARTHAS_PLATFORM               = 38,
+    DATA_TERENAS_MENETHIL              = 39,
+    DATA_ENEMY_GUNSHIP                 = 40,
+    DATA_UPPERSPIRE_TELE_ACT           = 41, /// also used by conditions
+    DATA_BLOOD_QUEEN_LANA_THEL_COUNCIL = 42
 };
 
 enum CreaturesIds
@@ -155,6 +156,7 @@ enum CreaturesIds
     NPC_ALCHEMIST_ADRIANNA                      = 38501,
     NPC_ALRIN_THE_AGILE                         = 38551,
     NPC_INFILTRATOR_MINCHAR_BQ                  = 38558,
+    NPC_INFILTRATOR_MINCHAR_BQ_25               = 39123,
     NPC_MINCHAR_BEAM_STALKER                    = 38557,
     NPC_VALITHRIA_DREAMWALKER_QUEST             = 38589,
 
@@ -246,6 +248,7 @@ enum CreaturesIds
     NPC_KINETIC_BOMB_TARGET                     = 38458,
     NPC_KINETIC_BOMB                            = 38454,
     NPC_SHOCK_VORTEX                            = 38422,
+    NPC_BLOOD_QUEEN_LANA_THEL_COUNCIL           = 38004,
 
     // Blood-Queen Lana'thel
     NPC_BLOOD_QUEEN_LANA_THEL                   = 37955,
@@ -524,14 +527,16 @@ enum AreaIds
 class spell_trigger_spell_from_caster : public SpellScriptLoader
 {
     public:
-        spell_trigger_spell_from_caster(char const* scriptName, uint32 triggerId) : SpellScriptLoader(scriptName), _triggerId(triggerId) { }
+        spell_trigger_spell_from_caster(char const* scriptName, uint32 triggerId, TriggerCastFlags triggerFlags = TRIGGERED_FULL_MASK)
+            : SpellScriptLoader(scriptName), _triggerId(triggerId), _triggerFlags(triggerFlags) { }
 
         class spell_trigger_spell_from_caster_SpellScript : public SpellScript
         {
             PrepareSpellScript(spell_trigger_spell_from_caster_SpellScript);
 
         public:
-            spell_trigger_spell_from_caster_SpellScript(uint32 triggerId) : SpellScript(), _triggerId(triggerId) { }
+            spell_trigger_spell_from_caster_SpellScript(uint32 triggerId, TriggerCastFlags triggerFlags)
+                : SpellScript(), _triggerId(triggerId), _triggerFlags(triggerFlags) { }
 
             bool Validate(SpellInfo const* /*spell*/) override
             {
@@ -542,7 +547,7 @@ class spell_trigger_spell_from_caster : public SpellScriptLoader
 
             void HandleTrigger()
             {
-                GetCaster()->CastSpell(GetHitUnit(), _triggerId, true);
+                GetCaster()->CastSpell(GetHitUnit(), _triggerId, _triggerFlags);
             }
 
             void Register() override
@@ -551,25 +556,23 @@ class spell_trigger_spell_from_caster : public SpellScriptLoader
             }
 
             uint32 _triggerId;
+            TriggerCastFlags _triggerFlags;
         };
 
         SpellScript* GetSpellScript() const override
         {
-            return new spell_trigger_spell_from_caster_SpellScript(_triggerId);
+            return new spell_trigger_spell_from_caster_SpellScript(_triggerId, _triggerFlags);
         }
 
     private:
         uint32 _triggerId;
+        TriggerCastFlags _triggerFlags;
 };
 
-template<class AI>
-CreatureAI* GetIcecrownCitadelAI(Creature* creature)
+template<class AI, class T>
+inline AI* GetIcecrownCitadelAI(T* obj)
 {
-    if (InstanceMap* instance = creature->GetMap()->ToInstanceMap())
-        if (instance->GetInstanceScript())
-            if (instance->GetScriptId() == sObjectMgr->GetScriptId(ICCScriptName))
-                return new AI(creature);
-    return NULL;
+    return GetInstanceAI<AI>(obj, ICCScriptName);
 }
 
 #endif // ICECROWN_CITADEL_H_

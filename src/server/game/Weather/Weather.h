@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -62,12 +62,12 @@ enum WeatherState
 };
 
 /// Weather for one zone
-class Weather
+class TC_GAME_API Weather
 {
     public:
 
         Weather(uint32 zone, WeatherData const* weatherChances);
-        ~Weather();
+        ~Weather() { };
 
         bool Update(uint32 diff);
         bool ReGenerate();

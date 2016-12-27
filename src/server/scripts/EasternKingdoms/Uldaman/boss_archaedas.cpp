@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2007 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -41,14 +41,17 @@ enum Says
 
 enum Spells
 {
-    SPELL_GROUND_TREMOR              = 6524,
-    SPELL_ARCHAEDAS_AWAKEN           = 10347,
-    SPELL_BOSS_OBJECT_VISUAL         = 11206,
-    SPELL_BOSS_AGGRO                 = 10340,
-    SPELL_SUB_BOSS_AGGRO             = 11568,
-    SPELL_AWAKEN_VAULT_WALKER        = 10258,
-    SPELL_AWAKEN_EARTHEN_GUARDIAN    = 10252,
-    SPELL_SELF_DESTRUCT              = 9874
+    SPELL_GROUND_TREMOR                = 6524,
+    SPELL_ARCHAEDAS_AWAKEN             = 10347,
+    SPELL_BOSS_OBJECT_VISUAL           = 11206,
+    SPELL_BOSS_AGGRO                   = 10340,
+    SPELL_SUB_BOSS_AGGRO               = 11568,
+    SPELL_AWAKEN_VAULT_WALKER          = 10258,
+    SPELL_AWAKEN_EARTHEN_GUARDIAN      = 10252,
+    SPELL_SELF_DESTRUCT                = 9874,
+    SPELL_FREEZE_ANIM                  = 16245,
+    SPELL_MINION_FREEZE_ANIM           = 10255
+
 };
 
 class boss_archaedas : public CreatureScript
@@ -95,7 +98,8 @@ class boss_archaedas : public CreatureScript
                 instance->SetData(0, 5);    // respawn any dead minions
                 me->setFaction(35);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+                me->SetControlled(true, UNIT_STATE_ROOT);
+                me->AddAura(SPELL_FREEZE_ANIM, me);
             }
 
             void ActivateMinion(ObjectGuid uiGuid, bool flag)
@@ -107,8 +111,9 @@ class boss_archaedas : public CreatureScript
                     DoCast(minion, SPELL_AWAKEN_VAULT_WALKER, flag);
                     minion->CastSpell(minion, SPELL_ARCHAEDAS_AWAKEN, true);
                     minion->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                    minion->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+                    minion->SetControlled(false, UNIT_STATE_ROOT);
                     minion->setFaction(14);
+                    minion->RemoveAura(SPELL_MINION_FREEZE_ANIM);
                 }
             }
 
@@ -116,7 +121,7 @@ class boss_archaedas : public CreatureScript
             {
                 me->setFaction(14);
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+                me->SetControlled(false, UNIT_STATE_ROOT);
             }
 
             void SpellHit(Unit* /*caster*/, const SpellInfo* spell) override
@@ -197,7 +202,7 @@ class boss_archaedas : public CreatureScript
                 DoMeleeAttackIfReady();
             }
 
-            void JustDied (Unit* /*killer*/)
+            void JustDied (Unit* /*killer*/) override
             {
                 instance->SetData(DATA_ANCIENT_DOOR, DONE);      // open the vault door
                 instance->SetData(DATA_MINIONS, SPECIAL);        // deactivate his minions
@@ -256,16 +261,17 @@ class npc_archaedas_minions : public CreatureScript
 
                 me->setFaction(35);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+                me->SetControlled(true, UNIT_STATE_ROOT);
                 me->RemoveAllAuras();
+                me->AddAura(SPELL_MINION_FREEZE_ANIM, me);
             }
 
             void EnterCombat(Unit* /*who*/) override
             {
                 me->setFaction (14);
                 me->RemoveAllAuras();
-                me->RemoveFlag (UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                me->RemoveFlag (UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                me->SetControlled(false, UNIT_STATE_ROOT);
                 bAmIAwake = true;
             }
 
@@ -297,7 +303,7 @@ class npc_archaedas_minions : public CreatureScript
                 {
                     bWakingUp = false;
                     bAmIAwake = true;
-                    // AttackStart(ObjectAccessor::GetUnit(*me, instance->GetGuidData(0))); // whoWokeArchaedasGUID
+                    AttackStart(ObjectAccessor::GetUnit(*me, instance->GetGuidData(0))); // whoWokeArchaedasGUID
                     return;     // dont want to continue until we finish the AttackStart method
                 }
 
@@ -344,15 +350,16 @@ class npc_stonekeepers : public CreatureScript
             {
                 me->setFaction(35);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+                me->SetControlled(true, UNIT_STATE_ROOT);
                 me->RemoveAllAuras();
+                me->AddAura(SPELL_MINION_FREEZE_ANIM, me);
             }
 
             void EnterCombat(Unit* /*who*/) override
             {
                 me->setFaction(14);
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+                me->SetControlled(false, UNIT_STATE_ROOT);
             }
 
             void UpdateAI(uint32 /*diff*/) override

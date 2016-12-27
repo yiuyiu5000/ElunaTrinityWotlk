@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -28,71 +28,67 @@ EndScriptData */
 #include "ObjectAccessor.h"
 #include "Player.h"
 #include "ScriptMgr.h"
-#include "SystemConfig.h"
+#include "GitRevision.h"
+#include "Util.h"
 
 class server_commandscript : public CommandScript
 {
 public:
     server_commandscript() : CommandScript("server_commandscript") { }
 
-    ChatCommand* GetCommands() const override
+    std::vector<ChatCommand> GetCommands() const override
     {
-        static ChatCommand serverIdleRestartCommandTable[] =
+        static std::vector<ChatCommand> serverIdleRestartCommandTable =
         {
-            { "cancel", rbac::RBAC_PERM_COMMAND_SERVER_IDLERESTART_CANCEL, true, &HandleServerShutDownCancelCommand, "", NULL },
-            { ""   ,    rbac::RBAC_PERM_COMMAND_SERVER_IDLERESTART,        true, &HandleServerIdleRestartCommand,    "", NULL },
-            { NULL,     0,                                          false, NULL,                               "", NULL }
+            { "cancel", rbac::RBAC_PERM_COMMAND_SERVER_IDLERESTART_CANCEL, true, &HandleServerShutDownCancelCommand, "" },
+            { ""   ,    rbac::RBAC_PERM_COMMAND_SERVER_IDLERESTART,        true, &HandleServerIdleRestartCommand,    "" },
         };
 
-        static ChatCommand serverIdleShutdownCommandTable[] =
+        static std::vector<ChatCommand> serverIdleShutdownCommandTable =
         {
-            { "cancel", rbac::RBAC_PERM_COMMAND_SERVER_IDLESHUTDOWN_CANCEL, true, &HandleServerShutDownCancelCommand, "", NULL },
-            { ""   ,    rbac::RBAC_PERM_COMMAND_SERVER_IDLESHUTDOWN,        true, &HandleServerIdleShutDownCommand,   "", NULL },
-            { NULL,     0,                                           false, NULL,                               "", NULL }
+            { "cancel", rbac::RBAC_PERM_COMMAND_SERVER_IDLESHUTDOWN_CANCEL, true, &HandleServerShutDownCancelCommand, "" },
+            { ""   ,    rbac::RBAC_PERM_COMMAND_SERVER_IDLESHUTDOWN,        true, &HandleServerIdleShutDownCommand,   "" },
         };
 
-        static ChatCommand serverRestartCommandTable[] =
+        static std::vector<ChatCommand> serverRestartCommandTable =
         {
-            { "cancel", rbac::RBAC_PERM_COMMAND_SERVER_RESTART_CANCEL, true, &HandleServerShutDownCancelCommand, "", NULL },
-            { ""   ,    rbac::RBAC_PERM_COMMAND_SERVER_RESTART,        true, &HandleServerRestartCommand,        "", NULL },
-            { NULL,     0,                                      false, NULL,                               "", NULL }
+            { "cancel", rbac::RBAC_PERM_COMMAND_SERVER_RESTART_CANCEL, true, &HandleServerShutDownCancelCommand, "" },
+            { "force",  rbac::RBAC_PERM_COMMAND_SERVER_RESTART_FORCE,  true, &HandleServerForceRestartCommand,   "" },
+            { ""   ,    rbac::RBAC_PERM_COMMAND_SERVER_RESTART,        true, &HandleServerRestartCommand,        "" },
         };
 
-        static ChatCommand serverShutdownCommandTable[] =
+        static std::vector<ChatCommand> serverShutdownCommandTable =
         {
-            { "cancel", rbac::RBAC_PERM_COMMAND_SERVER_SHUTDOWN_CANCEL, true, &HandleServerShutDownCancelCommand, "", NULL },
-            { ""   ,    rbac::RBAC_PERM_COMMAND_SERVER_SHUTDOWN,        true, &HandleServerShutDownCommand,       "", NULL },
-            { NULL,     0,                                       false, NULL,                               "", NULL }
+            { "cancel", rbac::RBAC_PERM_COMMAND_SERVER_SHUTDOWN_CANCEL, true, &HandleServerShutDownCancelCommand, "" },
+            { "force",  rbac::RBAC_PERM_COMMAND_SERVER_SHUTDOWN_FORCE,  true, &HandleServerForceShutDownCommand,  "" },
+            { ""   ,    rbac::RBAC_PERM_COMMAND_SERVER_SHUTDOWN,        true, &HandleServerShutDownCommand,       "" },
         };
 
-        static ChatCommand serverSetCommandTable[] =
+        static std::vector<ChatCommand> serverSetCommandTable =
         {
-            { "difftime", rbac::RBAC_PERM_COMMAND_SERVER_SET_DIFFTIME, true, &HandleServerSetDiffTimeCommand, "", NULL },
-            { "loglevel", rbac::RBAC_PERM_COMMAND_SERVER_SET_LOGLEVEL, true, &HandleServerSetLogLevelCommand, "", NULL },
-            { "motd",     rbac::RBAC_PERM_COMMAND_SERVER_SET_MOTD,     true, &HandleServerSetMotdCommand,     "", NULL },
-            { "closed",   rbac::RBAC_PERM_COMMAND_SERVER_SET_CLOSED,   true, &HandleServerSetClosedCommand,   "", NULL },
-            { NULL,       0,                                false, NULL,                            "", NULL }
+            { "difftime", rbac::RBAC_PERM_COMMAND_SERVER_SET_DIFFTIME, true, &HandleServerSetDiffTimeCommand, "" },
+            { "loglevel", rbac::RBAC_PERM_COMMAND_SERVER_SET_LOGLEVEL, true, &HandleServerSetLogLevelCommand, "" },
+            { "motd",     rbac::RBAC_PERM_COMMAND_SERVER_SET_MOTD,     true, &HandleServerSetMotdCommand,     "" },
+            { "closed",   rbac::RBAC_PERM_COMMAND_SERVER_SET_CLOSED,   true, &HandleServerSetClosedCommand,   "" },
         };
 
-        static ChatCommand serverCommandTable[] =
+        static std::vector<ChatCommand> serverCommandTable =
         {
-            { "corpses",      rbac::RBAC_PERM_COMMAND_SERVER_CORPSES,      true, &HandleServerCorpsesCommand, "", NULL },
-            { "exit",         rbac::RBAC_PERM_COMMAND_SERVER_EXIT,         true, &HandleServerExitCommand,    "", NULL },
-            { "idlerestart",  rbac::RBAC_PERM_COMMAND_SERVER_IDLERESTART,  true, NULL,                        "", serverIdleRestartCommandTable },
-            { "idleshutdown", rbac::RBAC_PERM_COMMAND_SERVER_IDLESHUTDOWN, true, NULL,                        "", serverIdleShutdownCommandTable },
-            { "info",         rbac::RBAC_PERM_COMMAND_SERVER_INFO,         true, &HandleServerInfoCommand,    "", NULL },
-            { "motd",         rbac::RBAC_PERM_COMMAND_SERVER_MOTD,         true, &HandleServerMotdCommand,    "", NULL },
-            { "plimit",       rbac::RBAC_PERM_COMMAND_SERVER_PLIMIT,       true, &HandleServerPLimitCommand,  "", NULL },
-            { "restart",      rbac::RBAC_PERM_COMMAND_SERVER_RESTART,      true, NULL,                        "", serverRestartCommandTable },
-            { "shutdown",     rbac::RBAC_PERM_COMMAND_SERVER_SHUTDOWN,     true, NULL,                        "", serverShutdownCommandTable },
-            { "set",          rbac::RBAC_PERM_COMMAND_SERVER_SET,          true, NULL,                        "", serverSetCommandTable },
-            { NULL,           0,                                    false, NULL,                        "", NULL }
+            { "corpses",      rbac::RBAC_PERM_COMMAND_SERVER_CORPSES,      true, &HandleServerCorpsesCommand, "" },
+            { "exit",         rbac::RBAC_PERM_COMMAND_SERVER_EXIT,         true, &HandleServerExitCommand,    "" },
+            { "idlerestart",  rbac::RBAC_PERM_COMMAND_SERVER_IDLERESTART,  true, nullptr,                     "", serverIdleRestartCommandTable },
+            { "idleshutdown", rbac::RBAC_PERM_COMMAND_SERVER_IDLESHUTDOWN, true, nullptr,                     "", serverIdleShutdownCommandTable },
+            { "info",         rbac::RBAC_PERM_COMMAND_SERVER_INFO,         true, &HandleServerInfoCommand,    "" },
+            { "motd",         rbac::RBAC_PERM_COMMAND_SERVER_MOTD,         true, &HandleServerMotdCommand,    "" },
+            { "plimit",       rbac::RBAC_PERM_COMMAND_SERVER_PLIMIT,       true, &HandleServerPLimitCommand,  "" },
+            { "restart",      rbac::RBAC_PERM_COMMAND_SERVER_RESTART,      true, nullptr,                     "", serverRestartCommandTable },
+            { "shutdown",     rbac::RBAC_PERM_COMMAND_SERVER_SHUTDOWN,     true, nullptr,                     "", serverShutdownCommandTable },
+            { "set",          rbac::RBAC_PERM_COMMAND_SERVER_SET,          true, nullptr,                     "", serverSetCommandTable },
         };
 
-         static ChatCommand commandTable[] =
+        static std::vector<ChatCommand> commandTable =
         {
-            { "server", rbac::RBAC_PERM_COMMAND_SERVER, true, NULL, "", serverCommandTable },
-            { NULL,     0,                       false, NULL, "", NULL }
+            { "server", rbac::RBAC_PERM_COMMAND_SERVER, true, nullptr, "", serverCommandTable },
         };
         return commandTable;
     }
@@ -100,7 +96,7 @@ public:
     // Triggering corpses expire check in world
     static bool HandleServerCorpsesCommand(ChatHandler* /*handler*/, char const* /*args*/)
     {
-        sObjectAccessor->RemoveOldCorpses();
+        sWorld->RemoveOldCorpses();
         return true;
     }
 
@@ -115,7 +111,7 @@ public:
         std::string uptime          = secsToTimeString(sWorld->GetUptime());
         uint32 updateTime           = sWorld->GetUpdateTime();
 
-        handler->SendSysMessage(_FULLVERSION);
+        handler->SendSysMessage(GitRevision::GetFullVersion());
         handler->PSendSysMessage(LANG_CONNECTED_PLAYERS, playersNum, maxPlayersNum);
         handler->PSendSysMessage(LANG_CONNECTED_USERS, activeClientsNum, maxActiveClientsNum, queuedClientsNum, maxQueuedClientsNum);
         handler->PSendSysMessage(LANG_UPTIME, uptime.c_str());
@@ -192,31 +188,52 @@ public:
         return true;
     }
 
-    static bool HandleServerShutDownCancelCommand(ChatHandler* /*handler*/, char const* /*args*/)
+    static bool HandleServerShutDownCancelCommand(ChatHandler* handler, char const* /*args*/)
     {
-        sWorld->ShutdownCancel();
+        if (uint32 timer = sWorld->ShutdownCancel())
+            handler->PSendSysMessage(LANG_SHUTDOWN_CANCELLED, timer);
 
         return true;
     }
 
-    static bool HandleServerShutDownCommand(ChatHandler* /*handler*/, char const* args)
+    static bool IsOnlyUser(WorldSession* mySession)
     {
-        return ShutdownServer(args, 0, SHUTDOWN_EXIT_CODE);
+        // check if there is any session connected from a different address
+        std::string myAddr = mySession ? mySession->GetRemoteAddress() : "";
+        SessionMap const& sessions = sWorld->GetAllSessions();
+        for (SessionMap::value_type const& session : sessions)
+            if (session.second && myAddr != session.second->GetRemoteAddress())
+                return false;
+        return true;
+    }
+    static bool HandleServerShutDownCommand(ChatHandler* handler, char const* args)
+    {
+        return ShutdownServer(handler, args, 0, SHUTDOWN_EXIT_CODE);
     }
 
-    static bool HandleServerRestartCommand(ChatHandler* /*handler*/, char const* args)
+    static bool HandleServerRestartCommand(ChatHandler* handler, char const* args)
     {
-        return ShutdownServer(args, SHUTDOWN_MASK_RESTART, RESTART_EXIT_CODE);
+        return ShutdownServer(handler, args, SHUTDOWN_MASK_RESTART, RESTART_EXIT_CODE);
     }
 
-    static bool HandleServerIdleRestartCommand(ChatHandler* /*handler*/, char const* args)
+    static bool HandleServerForceShutDownCommand(ChatHandler* handler, char const* args)
     {
-        return ShutdownServer(args, SHUTDOWN_MASK_RESTART | SHUTDOWN_MASK_IDLE, RESTART_EXIT_CODE);
+        return ShutdownServer(handler, args, SHUTDOWN_MASK_FORCE, SHUTDOWN_EXIT_CODE);
     }
 
-    static bool HandleServerIdleShutDownCommand(ChatHandler* /*handler*/, char const* args)
+    static bool HandleServerForceRestartCommand(ChatHandler* handler, char const* args)
     {
-        return ShutdownServer(args, SHUTDOWN_MASK_IDLE, SHUTDOWN_EXIT_CODE);
+        return ShutdownServer(handler, args, SHUTDOWN_MASK_FORCE | SHUTDOWN_MASK_RESTART, RESTART_EXIT_CODE);
+    }
+
+    static bool HandleServerIdleShutDownCommand(ChatHandler* handler, char const* args)
+    {
+        return ShutdownServer(handler, args, SHUTDOWN_MASK_IDLE, SHUTDOWN_EXIT_CODE);
+    }
+
+    static bool HandleServerIdleRestartCommand(ChatHandler* handler, char const* args)
+    {
+        return ShutdownServer(handler, args, SHUTDOWN_MASK_RESTART | SHUTDOWN_MASK_IDLE, RESTART_EXIT_CODE);
     }
 
     // Exit the realm
@@ -263,8 +280,8 @@ public:
             return false;
 
         char* type = strtok((char*)args, " ");
-        char* name = strtok(NULL, " ");
-        char* level = strtok(NULL, " ");
+        char* name = strtok(nullptr, " ");
+        char* level = strtok(nullptr, " ");
 
         if (!type || !name || !level || *name == '\0' || *level == '\0' || (*type != 'a' && *type != 'l'))
             return false;
@@ -311,7 +328,7 @@ private:
         return true;
     }
 
-    static bool ShutdownServer(char const* args, uint32 shutdownMask, int32 defaultExitCode)
+    static bool ShutdownServer(ChatHandler* handler, char const* args, uint32 shutdownMask, int32 defaultExitCode)
     {
         if (!*args)
             return false;
@@ -320,9 +337,25 @@ private:
             return false;
 
         // #delay [#exit_code] [reason]
+        int32 delay = 0;
         char* delayStr = strtok((char*)args, " ");
-        if (!delayStr || !isNumeric(delayStr))
+        if (!delayStr)
             return false;
+
+        if (isNumeric(delayStr))
+        {
+            delay = atoi(delayStr);
+            // Prevent interpret wrong arg value as 0 secs shutdown time
+            if ((delay == 0 && (delayStr[0] != '0' || delayStr[1] != '\0')) || delay < 0)
+                return false;
+        }
+        else
+        {
+            delay = TimeStringToSecs(std::string(delayStr));
+
+            if (delay == 0)
+                return false;
+        }
 
         char* exitCodeStr = nullptr;
 
@@ -344,16 +377,17 @@ private:
             }
         }
 
-        int32 delay = atoi(delayStr);
-
-        // Prevent interpret wrong arg value as 0 secs shutdown time
-        if ((delay == 0 && (delayStr[0] != '0' || delayStr[1] != '\0')) || delay < 0)
-            return false;
-
         int32 exitCode = defaultExitCode;
         if (exitCodeStr)
             if (!ParseExitCode(exitCodeStr, exitCode))
                 return false;
+
+        // Override parameter "delay" with the configuration value if there are still players connected and "force" parameter was not specified
+        if (delay < (int32)sWorld->getIntConfig(CONFIG_FORCE_SHUTDOWN_THRESHOLD) && !(shutdownMask & SHUTDOWN_MASK_FORCE) && !IsOnlyUser(handler->GetSession()))
+        {
+            delay = (int32)sWorld->getIntConfig(CONFIG_FORCE_SHUTDOWN_THRESHOLD);
+            handler->PSendSysMessage(LANG_SHUTDOWN_DELAYED, delay);
+        }
 
         sWorld->ShutdownServ(delay, shutdownMask, static_cast<uint8>(exitCode), std::string(reason));
 

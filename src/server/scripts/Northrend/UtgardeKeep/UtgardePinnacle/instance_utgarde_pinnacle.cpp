@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -19,11 +19,16 @@
 #include "InstanceScript.h"
 #include "utgarde_pinnacle.h"
 
+BossBoundaryData const boundaries =
+{
+    { DATA_KING_YMIRON, new RectangleBoundary(340.0f, 443.0f, -412.0f, -275.0f) }
+};
+
 DoorData const doorData[] =
 {
-    { GO_SKADI_THE_RUTHLESS_DOOR,   DATA_SKADI_THE_RUTHLESS,    DOOR_TYPE_PASSAGE,  BOUNDARY_W    },
-    { GO_KING_YMIRON_DOOR,          DATA_KING_YMIRON,           DOOR_TYPE_PASSAGE,  BOUNDARY_N    },
-    { 0,                            0,                          DOOR_TYPE_ROOM,     BOUNDARY_NONE } // END
+    { GO_SKADI_THE_RUTHLESS_DOOR,   DATA_SKADI_THE_RUTHLESS,    DOOR_TYPE_PASSAGE },
+    { GO_KING_YMIRON_DOOR,          DATA_KING_YMIRON,           DOOR_TYPE_PASSAGE },
+    { 0,                            0,                          DOOR_TYPE_ROOM } // END
 };
 
 class instance_utgarde_pinnacle : public InstanceMapScript
@@ -37,6 +42,7 @@ class instance_utgarde_pinnacle : public InstanceMapScript
             {
                 SetHeaders(DataHeader);
                 SetBossNumber(EncounterCount);
+                LoadBossBoundaries(boundaries);
                 LoadDoorData(doorData);
             }
 
@@ -73,6 +79,9 @@ class instance_utgarde_pinnacle : public InstanceMapScript
                         break;
                     case NPC_PALEHOOF_ORB:
                         PalehoofOrbGUID = creature->GetGUID();
+                        break;
+                    case NPC_GRAUF:
+                        GraufGUID = creature->GetGUID();
                         break;
                     default:
                         break;
@@ -158,6 +167,8 @@ class instance_utgarde_pinnacle : public InstanceMapScript
                         return SvalaGUID;
                     case DATA_SACRIFICED_PLAYER:
                         return SacrificedPlayerGUID;
+                    case DATA_GRAUF:
+                        return GraufGUID;
                     default:
                         break;
                 }
@@ -183,6 +194,8 @@ class instance_utgarde_pinnacle : public InstanceMapScript
 
             ObjectGuid SvalaGUID;
             ObjectGuid SacrificedPlayerGUID;
+
+            ObjectGuid GraufGUID;
         };
 
         InstanceScript* GetInstanceScript(InstanceMap* map) const override

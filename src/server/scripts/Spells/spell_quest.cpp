@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -208,22 +208,23 @@ class spell_q6124_6129_apply_salve : public SpellScriptLoader
                 if (GetCastItem())
                     if (Creature* creatureTarget = GetHitCreature())
                     {
-                        uint32 uiNewEntry = 0;
+                        uint32 newEntry = 0;
                         switch (caster->GetTeam())
                         {
                             case HORDE:
                                 if (creatureTarget->GetEntry() == NPC_SICKLY_GAZELLE)
-                                    uiNewEntry = NPC_CURED_GAZELLE;
+                                    newEntry = NPC_CURED_GAZELLE;
                                 break;
                             case ALLIANCE:
                                 if (creatureTarget->GetEntry() == NPC_SICKLY_DEER)
-                                    uiNewEntry = NPC_CURED_DEER;
+                                    newEntry = NPC_CURED_DEER;
                                 break;
                         }
-                        if (uiNewEntry)
+                        if (newEntry)
                         {
-                            creatureTarget->UpdateEntry(uiNewEntry);
+                            creatureTarget->UpdateEntry(newEntry);
                             creatureTarget->DespawnOrUnsummon(DESPAWN_TIME);
+                            caster->KilledMonsterCredit(newEntry);
                         }
                     }
             }
@@ -338,7 +339,7 @@ class spell_q11396_11399_scourging_crystal_controller : public SpellScriptLoader
         SpellScript* GetSpellScript() const override
         {
             return new spell_q11396_11399_scourging_crystal_controller_SpellScript();
-        };
+        }
 };
 
 // 43882 Scourging Crystal Controller Dummy
@@ -374,7 +375,7 @@ class spell_q11396_11399_scourging_crystal_controller_dummy : public SpellScript
         SpellScript* GetSpellScript() const override
         {
             return new spell_q11396_11399_scourging_crystal_controller_dummy_SpellScript();
-        };
+        }
 };
 
 // http://www.wowhead.com/quest=11515 Blood for Blood
@@ -855,7 +856,7 @@ class spell_symbol_of_life_dummy : public SpellScriptLoader
         SpellScript* GetSpellScript() const override
         {
             return new spell_symbol_of_life_dummy_SpellScript();
-        };
+        }
 };
 
 // http://www.wowhead.com/quest=12659 Scalps!
@@ -898,7 +899,7 @@ class spell_q12659_ahunaes_knife : public SpellScriptLoader
         SpellScript* GetSpellScript() const override
         {
             return new spell_q12659_ahunaes_knife_SpellScript();
-        };
+        }
 };
 
 enum StoppingTheSpread
@@ -944,7 +945,7 @@ class spell_q9874_liquid_fire : public SpellScriptLoader
         SpellScript* GetSpellScript() const override
         {
             return new spell_q9874_liquid_fire_SpellScript();
-        };
+        }
 };
 
 enum SalvagingLifesStength
@@ -988,7 +989,7 @@ class spell_q12805_lifeblood_dummy : public SpellScriptLoader
         SpellScript* GetSpellScript() const override
         {
             return new spell_q12805_lifeblood_dummy_SpellScript();
-        };
+        }
 };
 
 /*
@@ -1076,9 +1077,9 @@ class spell_q14112_14145_chum_the_water: public SpellScriptLoader
 // http://old01.wowhead.com/quest=9452 - Red Snapper - Very Tasty!
 enum RedSnapperVeryTasty
 {
-    SPELL_CAST_NET          = 29866,
-    ITEM_RED_SNAPPER        = 23614,
-    SPELL_NEW_SUMMON_TEST   = 49214,
+    ITEM_RED_SNAPPER             = 23614,
+    SPELL_CAST_NET               = 29866,
+    SPELL_FISHED_UP_MURLOC       = 29869
 };
 
 class spell_q9452_cast_net: public SpellScriptLoader
@@ -1101,18 +1102,96 @@ class spell_q9452_cast_net: public SpellScriptLoader
                 if (roll_chance_i(66))
                     caster->AddItem(ITEM_RED_SNAPPER, 1);
                 else
-                    caster->CastSpell(caster, SPELL_NEW_SUMMON_TEST, true);
+                    caster->CastSpell(caster, SPELL_FISHED_UP_MURLOC, true);
+            }
+
+            void HandleActiveObject(SpellEffIndex effIndex)
+            {
+                PreventHitDefaultEffect(effIndex);
+                GetHitGObj()->SetRespawnTime(roll_chance_i(50) ? 2 * MINUTE : 3 * MINUTE);
+                GetHitGObj()->Use(GetCaster());
+                GetHitGObj()->SetLootState(GO_JUST_DEACTIVATED);
             }
 
             void Register() override
             {
                 OnEffectHit += SpellEffectFn(spell_q9452_cast_net_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+                OnEffectHitTarget += SpellEffectFn(spell_q9452_cast_net_SpellScript::HandleActiveObject, EFFECT_1, SPELL_EFFECT_ACTIVATE_OBJECT);
             }
         };
 
         SpellScript* GetSpellScript() const override
         {
             return new spell_q9452_cast_net_SpellScript();
+        }
+};
+
+enum PoundDrumSpells
+{
+    SPELL_SUMMON_DEEP_JORMUNGAR     = 66510,
+    SPELL_STORMFORGED_MOLE_MACHINE  = 66492
+};
+
+class spell_q14076_14092_pound_drum : public SpellScriptLoader
+{
+    public:
+        spell_q14076_14092_pound_drum() : SpellScriptLoader("spell_q14076_14092_pound_drum") { }
+
+        class spell_q14076_14092_pound_drum_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_q14076_14092_pound_drum_SpellScript);
+
+            void HandleSummon()
+            {
+                Unit* caster = GetCaster();
+
+                if (roll_chance_i(80))
+                    caster->CastSpell(caster, SPELL_SUMMON_DEEP_JORMUNGAR, true);
+                else
+                    caster->CastSpell(caster, SPELL_STORMFORGED_MOLE_MACHINE, true);
+            }
+
+            void HandleActiveObject(SpellEffIndex /*effIndex*/)
+            {
+                GetHitGObj()->SetLootState(GO_JUST_DEACTIVATED);
+            }
+
+            void Register() override
+            {
+                OnCast += SpellCastFn(spell_q14076_14092_pound_drum_SpellScript::HandleSummon);
+                OnEffectHitTarget += SpellEffectFn(spell_q14076_14092_pound_drum_SpellScript::HandleActiveObject, EFFECT_0, SPELL_EFFECT_ACTIVATE_OBJECT);
+            }
+        };
+
+        SpellScript* GetSpellScript() const override
+        {
+            return new spell_q14076_14092_pound_drum_SpellScript();
+        }
+};
+
+class spell_q12279_cast_net : public SpellScriptLoader
+{
+    public:
+        spell_q12279_cast_net() : SpellScriptLoader("spell_q12279_cast_net") { }
+
+        class spell_q12279_cast_net_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_q12279_cast_net_SpellScript);
+
+            void HandleActiveObject(SpellEffIndex /*effIndex*/)
+            {
+                GetHitGObj()->SetLootState(GO_JUST_DEACTIVATED);
+            }
+
+            void Register() override
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_q12279_cast_net_SpellScript::HandleActiveObject, EFFECT_1, SPELL_EFFECT_ACTIVATE_OBJECT);
+            }
+        };
+
+        SpellScript* GetSpellScript() const override
+        {
+            return new spell_q12279_cast_net_SpellScript();
         }
 };
 
@@ -1684,7 +1763,7 @@ enum Quest13291_13292_13239_13261Data
     NPC_SKYTALON       = 31583,
     NPC_DECOY          = 31578,
     // Spells
-    SPELL_RIDE         = 56687
+    SPELL_RIDE         = 59319
 };
 
 class spell_q13291_q13292_q13239_q13261_frostbrood_skytalon_grab_decoy : public SpellScriptLoader
@@ -2400,6 +2479,232 @@ class spell_q10929_fumping : SpellScriptLoader
     }
 };
 
+class spell_q12414_hand_over_reins : public SpellScriptLoader
+{
+    public:
+        spell_q12414_hand_over_reins() : SpellScriptLoader("spell_q12414_hand_over_reins") { }
+
+        class spell_q12414_hand_over_reins_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_q12414_hand_over_reins_SpellScript);
+
+            void HandleScript(SpellEffIndex /*effIndex*/)
+            {
+                Creature* caster = GetCaster()->ToCreature();
+                GetHitUnit()->ExitVehicle();
+
+                if (caster)
+                    caster->DespawnOrUnsummon();
+            }
+
+            void Register() override
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_q12414_hand_over_reins_SpellScript::HandleScript, EFFECT_1, SPELL_EFFECT_SCRIPT_EFFECT);
+            }
+        };
+
+        SpellScript* GetSpellScript() const override
+        {
+            return new spell_q12414_hand_over_reins_SpellScript();
+        }
+};
+
+// 13790 13793 13811 13814 - Among the Champions
+// 13665 13745 13750 13756 13761 13767 13772 13777 13782  13787 - The Grand Melee
+class spell_q13665_q13790_bested_trigger : public SpellScriptLoader
+{
+    public:
+        spell_q13665_q13790_bested_trigger() : SpellScriptLoader("spell_q13665_q13790_bested_trigger") { }
+
+        class spell_q13665_q13790_bested_trigger_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_q13665_q13790_bested_trigger_SpellScript);
+
+            void HandleScript(SpellEffIndex /*effIndex*/)
+            {
+                Unit* target = GetHitUnit()->GetCharmerOrOwnerOrSelf();
+                target->CastSpell(target, uint32(GetEffectValue()), true);
+            }
+
+            void Register() override
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_q13665_q13790_bested_trigger_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+            }
+        };
+
+        SpellScript* GetSpellScript() const override
+        {
+            return new spell_q13665_q13790_bested_trigger_SpellScript();
+        }
+};
+
+// herald of war and life without regret portal spells
+class spell_59064_59439_portals : public SpellScriptLoader
+{
+public:
+    spell_59064_59439_portals() : SpellScriptLoader("spell_59064_59439_portals") { }
+
+    class spell_59064_59439_portals_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_59064_59439_portals_SpellScript);
+
+        void HandleScript(SpellEffIndex /*effIndex*/)
+        {
+            GetHitUnit()->CastSpell(GetHitUnit(), uint32(GetEffectValue()));
+        }
+
+        void Register() override
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_59064_59439_portals_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_59064_59439_portals_SpellScript();
+    }
+};
+
+enum ApplyHeatAndStir
+{
+    SPELL_SPURTS_AND_SMOKE    = 38594,
+    SPELL_FAILED_MIX_1        = 43376,
+    SPELL_FAILED_MIX_2        = 43378,
+    SPELL_FAILED_MIX_3        = 43970,
+    SPELL_SUCCESSFUL_MIX      = 43377,
+
+    CREATURE_GENERIC_TRIGGER_LAB = 24042,
+
+    TALK_0 = 0,
+    TALK_1 = 1
+};
+
+class spell_q11306_mixing_blood : public SpellScriptLoader
+{
+public:
+    spell_q11306_mixing_blood() : SpellScriptLoader("spell_q11306_mixing_blood") { }
+
+    class spell_q11306_mixing_blood_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_q11306_mixing_blood_SpellScript);
+
+        void HandleEffect(SpellEffIndex /*effIndex*/)
+        {
+            if (Unit* caster = GetCaster())
+                if (Creature* trigger = caster->FindNearestCreature(CREATURE_GENERIC_TRIGGER_LAB, 100.0f))
+                    trigger->AI()->DoCastSelf(SPELL_SPURTS_AND_SMOKE);
+        }
+
+        void Register() override
+        {
+            OnEffectHit += SpellEffectFn(spell_q11306_mixing_blood_SpellScript::HandleEffect, EFFECT_1, SPELL_EFFECT_SEND_EVENT);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_q11306_mixing_blood_SpellScript();
+    }
+};
+
+class spell_q11306_mixing_vrykul_blood : public SpellScriptLoader
+{
+    public:
+        spell_q11306_mixing_vrykul_blood() : SpellScriptLoader("spell_q11306_mixing_vrykul_blood") { }
+
+        class spell_q11306_mixing_vrykul_blood_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_q11306_mixing_vrykul_blood_SpellScript);
+
+            void HandleDummy(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    uint8 chance = urand(0, 99);
+                    uint32 spellId = 0;
+
+                    // 90% chance of getting one out of three failure effects
+                    if (chance < 30)
+                        spellId = SPELL_FAILED_MIX_1;
+                    else if (chance < 60)
+                        spellId = SPELL_FAILED_MIX_2;
+                    else if (chance < 90)
+                        spellId = SPELL_FAILED_MIX_3;
+                    else // 10% chance of successful cast
+                        spellId = SPELL_SUCCESSFUL_MIX;
+
+                    caster->CastSpell(caster, spellId, true);
+                }
+            }
+
+            void Register() override
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_q11306_mixing_vrykul_blood_SpellScript::HandleDummy, EFFECT_1, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const override
+        {
+            return new spell_q11306_mixing_vrykul_blood_SpellScript();
+        }
+};
+
+class spell_q11306_failed_mix_43376 : public SpellScriptLoader
+{
+public:
+    spell_q11306_failed_mix_43376() : SpellScriptLoader("spell_q11306_failed_mix_43376") { }
+
+    class spell_q11306_failed_mix_43376_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_q11306_failed_mix_43376_SpellScript);
+
+        void HandleEffect(SpellEffIndex /*effIndex*/)
+        {
+            if (Unit* caster = GetCaster())
+                if (Creature* trigger = caster->FindNearestCreature(CREATURE_GENERIC_TRIGGER_LAB, 100.0f))
+                    trigger->AI()->Talk(TALK_0, caster);
+        }
+
+        void Register() override
+        {
+            OnEffectHit += SpellEffectFn(spell_q11306_failed_mix_43376_SpellScript::HandleEffect, EFFECT_1, SPELL_EFFECT_SEND_EVENT);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_q11306_failed_mix_43376_SpellScript();
+    }
+};
+
+class spell_q11306_failed_mix_43378 : public SpellScriptLoader
+{
+public:
+    spell_q11306_failed_mix_43378() : SpellScriptLoader("spell_q11306_failed_mix_43378") { }
+
+    class spell_q11306_failed_mix_43378_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_q11306_failed_mix_43378_SpellScript);
+
+        void HandleEffect(SpellEffIndex /*effIndex*/)
+        {
+            if (Unit* caster = GetCaster())
+                if (Creature* trigger = caster->FindNearestCreature(CREATURE_GENERIC_TRIGGER_LAB, 100.0f))
+                    trigger->AI()->Talk(TALK_1, caster);
+        }
+
+        void Register() override
+        {
+            OnEffectHit += SpellEffectFn(spell_q11306_failed_mix_43378_SpellScript::HandleEffect, EFFECT_2, SPELL_EFFECT_SEND_EVENT);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_q11306_failed_mix_43378_SpellScript();
+    }
+};
+
 void AddSC_quest_spell_scripts()
 {
     new spell_q55_sacred_cleansing();
@@ -2426,6 +2731,8 @@ void AddSC_quest_spell_scripts()
     new spell_q13280_13283_plant_battle_standard();
     new spell_q14112_14145_chum_the_water();
     new spell_q9452_cast_net();
+    new spell_q12279_cast_net();
+    new spell_q14076_14092_pound_drum();
     new spell_q12987_read_pronouncement();
     new spell_q12277_wintergarde_mine_explosion();
     new spell_q12066_bunny_kill_credit();
@@ -2458,4 +2765,11 @@ void AddSC_quest_spell_scripts()
     new spell_q13400_illidan_kill_master();
     new spell_q14100_q14111_make_player_destroy_totems();
     new spell_q10929_fumping();
+    new spell_q12414_hand_over_reins();
+    new spell_q13665_q13790_bested_trigger();
+    new spell_59064_59439_portals();
+    new spell_q11306_mixing_blood();
+    new spell_q11306_mixing_vrykul_blood();
+    new spell_q11306_failed_mix_43376();
+    new spell_q11306_failed_mix_43378();
 }
